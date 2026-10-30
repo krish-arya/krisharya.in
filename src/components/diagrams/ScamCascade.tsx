@@ -62,8 +62,8 @@ export function ScamCascade() {
           </p>
         ))}
       </div>
-      <div className="px-2 pt-3">
-        <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label="A scam's share cascade over time. The hybrid model flags it at about 50 shares; the viral threshold is 500 or more.">
+      <div className="overflow-x-auto px-2 pt-3">
+        <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full min-w-[560px]" role="img" aria-label="A scam's share cascade over time. The hybrid model flags it at about 50 shares; the viral threshold is 500 or more.">
           {[1, 10, 100, 1000].map((v) => (
             <g key={v}>
               <line x1={L} x2={W - R} y1={ly(v)} y2={ly(v)} stroke="var(--line)" />

@@ -5,7 +5,7 @@ export default function Home() {
   return (
     <>
       {/* The desktop is interactive; this is the same story for crawlers and screen readers. */}
-      <div className="sr-only">
+      <section aria-label="Summary" className="sr-only">
         <h1>
           {person.name}: {person.roles.join(", ")}
         </h1>
@@ -21,7 +21,7 @@ export default function Home() {
           ))}
         </ul>
         <a href={`mailto:${person.email}`}>{person.email}</a>
-      </div>
+      </section>
       <Desktop />
     </>
   );

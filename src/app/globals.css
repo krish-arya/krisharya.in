@@ -5,7 +5,7 @@
 :root {
   --fg: #1d1d1f;
   --fg-2: rgba(29, 29, 31, 0.74);
-  --fg-3: rgba(29, 29, 31, 0.5);
+  --fg-3: #6e6e73; /* opaque: 50% black fails 4.5:1 on window greys */
   --sep: rgba(0, 0, 0, 0.1);
   --hover: rgba(0, 0, 0, 0.045);
   --sel: rgba(0, 0, 0, 0.08);
@@ -140,6 +140,21 @@ button {
   cursor: default;
 }
 
+.skip-link {
+  position: fixed;
+  left: 12px;
+  top: -60px;
+  z-index: 200;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #fff;
+  background: var(--accent);
+}
+.skip-link:focus {
+  top: calc(var(--menu-h) + 8px);
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -156,6 +171,18 @@ button {
 .desktop {
   position: fixed;
   inset: 0;
+  /* chrome, not a page: no text selection, tap flash or callouts outside content */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+.window-body,
+.desktop input,
+.desktop textarea,
+.desktop [contenteditable] {
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 .workspace {
@@ -164,6 +191,10 @@ button {
   isolation: isolate;
   z-index: 1;
   overflow-y: auto;
+}
+.workspace:focus,
+.window:focus {
+  outline: none;
 }
 @media (min-width: 720px) {
   .workspace {
@@ -196,8 +227,9 @@ button {
   padding: 0 9px;
   border-radius: 5px;
 }
-.menu-btn:hover,
-.menu-btn.is-on {
+/* like macOS, titles only highlight while a menu is open */
+.menu-btn.is-on,
+.menu-btn:active {
   background: var(--sel);
 }
 
@@ -206,6 +238,7 @@ button {
   top: 25px;
   left: 0;
   min-width: 220px;
+  max-width: calc(100vw - 16px);
   padding: 5px;
   border-radius: 9px;
   background: var(--menu);
@@ -216,7 +249,8 @@ button {
   animation: pop 120ms var(--ease);
 }
 .menu button {
-  display: block;
+  display: flex;
+  align-items: center;
   width: 100%;
   padding: 3px 10px;
   border-radius: 5px;
@@ -426,6 +460,19 @@ button {
   opacity: 0;
   pointer-events: none;
 }
+/* a window opened at desktop width keeps its inline box; full screen it if the viewport narrows */
+@media (max-width: 719px) {
+  .window {
+    left: 0 !important;
+    top: var(--menu-h) !important;
+    width: 100% !important;
+    height: calc(100% - var(--menu-h)) !important;
+    border-radius: 0;
+  }
+  .window .resize {
+    display: none;
+  }
+}
 
 .titlebar {
   position: relative;
@@ -497,11 +544,23 @@ button {
 }
 @media (max-width: 719px) {
   .light {
+    position: relative;
     width: 14px;
     height: 14px;
   }
+  /* a finger-sized target without a bigger dot */
+  .light::before {
+    content: "";
+    position: absolute;
+    inset: -10px;
+  }
   .light svg {
     opacity: 1;
+  }
+  /* phones: windows are always full screen and there's no dock to minimize to */
+  .light.min,
+  .light.zoom {
+    display: none;
   }
 }
 
@@ -585,7 +644,7 @@ button {
   color: var(--fg-2);
   transition: background 120ms;
 }
-.segmented button[aria-selected="true"] {
+.segmented button[aria-pressed="true"] {
   background: var(--seg-on);
   color: var(--fg);
   font-weight: 500;
@@ -722,7 +781,8 @@ button {
   outline: none;
 }
 .mail-row select option {
-  color: #1d1d1f;
+  color: var(--fg);
+  background: var(--win);
 }
 .chip-to {
   padding: 1px 8px;
@@ -736,14 +796,14 @@ button {
   position: fixed;
   inset: 0;
   z-index: 80;
-  overflow-y: auto;
   background: rgba(16, 16, 30, 0.5);
   backdrop-filter: blur(40px) saturate(140%);
   -webkit-backdrop-filter: blur(40px) saturate(140%);
   animation: lp-in 220ms var(--ease);
 }
 .lp-search {
-  width: 240px;
+  /* never reaches the Done button on narrow phones */
+  width: min(240px, calc(100vw - 168px));
   height: 30px;
   padding: 0 12px;
   border-radius: 8px;

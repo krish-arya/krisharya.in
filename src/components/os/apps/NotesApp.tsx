@@ -34,7 +34,17 @@ const NOTES: { title: string; preview: string; body: ReactNode }[] = [
           <tbody>
             {loops.map((l) => (
               <tr key={l.id} onClick={() => launch(`project:${l.id}`)} className="row cursor-pointer align-top">
-                <td className="py-2 pr-3 font-medium">{l.system}</td>
+                <td className="py-2 pr-3 font-medium">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      launch(`project:${l.id}`);
+                    }}
+                    className="text-left"
+                  >
+                    {l.system}
+                  </button>
+                </td>
                 <td className="py-2 pr-3 text-[var(--fg-2)]">{l.generator}</td>
                 <td className="hidden py-2 pr-3 text-[var(--fg-2)] sm:table-cell">{l.verifier}</td>
                 <td className="hidden py-2 text-[var(--fg-2)] md:table-cell">{l.feedback}</td>

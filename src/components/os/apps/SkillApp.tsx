@@ -46,10 +46,11 @@ export function SkillApp({ slug }: { slug: string }) {
 
       {siblings.length > 0 && (
         <Section title={`More in ${s.group}`}>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-4">
             {siblings.map((x) => (
-              <button key={x.slug} title={x.name} onClick={() => launch(`skill:${x.slug}`)} className="transition-transform hover:scale-105">
-                <Icon spec={resolve(`skill:${x.slug}`)!.icon} size={40} />
+              <button key={x.slug} onClick={() => launch(`skill:${x.slug}`)} className="group flex w-[68px] flex-col items-center gap-1.5">
+                <Icon spec={resolve(`skill:${x.slug}`)!.icon} size={44} className="transition-transform group-hover:scale-105" />
+                <span className="line-clamp-2 text-center text-[11px] leading-tight text-[var(--fg-2)]">{x.name}</span>
               </button>
             ))}
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useId, useRef } from "react";
 import type { ProjectId } from "@/content/data";
 import { DOCK_H, MENU_H, focused, os, useOs, type Win } from "@/lib/os";
 import { AboutApp } from "./apps/AboutApp";
@@ -46,6 +46,7 @@ const MIN_H = 220;
 export function Window({ win }: { win: Win }) {
   const active = useOs((s) => focused(s)?.key === win.key);
   const meta = resolve(win.key)!;
+  const titleId = useId();
   const drag = useRef<{ px: number; py: number; x: number; y: number; w: number; h: number; mode: "move" | "size" } | null>(null);
 
   const start = (e: React.PointerEvent, mode: "move" | "size") => {
@@ -78,12 +79,27 @@ export function Window({ win }: { win: Win }) {
   return (
     <section
       role="dialog"
-      aria-label={meta.title ?? meta.name}
+      aria-labelledby={titleId}
+      data-win={win.key}
+      tabIndex={-1}
+      // minimized windows stay mounted for the animation; take them out of tab order and the a11y tree
+      inert={win.min || undefined}
       onPointerDownCapture={() => os.focus(win.key)}
+      onFocusCapture={() => os.focus(win.key)}
       className={`window ${win.max ? "is-max" : ""} ${win.min ? "is-min" : ""} ${active ? "is-active" : ""} ${dark ? "is-dark" : ""}`}
       style={{ ...box, zIndex: win.z }}
     >
-      <header className="titlebar" onPointerDown={(e) => start(e, "move")} onPointerMove={move} onPointerUp={end} onDoubleClick={() => os.toggleMax(win.key)}>
+      <header
+        className="titlebar"
+        onPointerDown={(e) => start(e, "move")}
+        onPointerMove={move}
+        onPointerUp={end}
+        onDoubleClick={(e) => {
+          // a quick double-click on the lights already toggled twice
+          if ((e.target as HTMLElement).closest("button")) return;
+          os.toggleMax(win.key);
+        }}
+      >
         <div className="lights">
           <button aria-label="Close" className="light close" onClick={() => os.close(win.key)}>
             <svg viewBox="0 0 8 8">
@@ -101,7 +117,7 @@ export function Window({ win }: { win: Win }) {
             </svg>
           </button>
         </div>
-        <h2 className="title">{meta.title ?? meta.name}</h2>
+        <h2 id={titleId} className="title">{meta.title ?? meta.name}</h2>
       </header>
       <div className="window-body">
         <AppView k={win.key} />

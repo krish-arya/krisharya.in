@@ -44,7 +44,7 @@ export function ProjectApp({ id }: { id: ProjectId }) {
         )}
 
         <div className="mt-8">
-          <Segmented value={level} onChange={setLevel} options={LEVELS.map((l, i) => ({ v: i, l }))} />
+          <Segmented label="Detail level" value={level} onChange={setLevel} options={LEVELS.map((l, i) => ({ v: i, l }))} />
           <div className="mt-4 min-h-[96px]">
             <Blocks blocks={p.levels[level]} />
           </div>

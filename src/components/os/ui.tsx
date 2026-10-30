@@ -25,11 +25,22 @@ export function SideItem({ on, onClick, children, aside }: { on: boolean; onClic
   );
 }
 
-export function Segmented<T extends string | number>({ value, options, onChange }: { value: T; options: { v: T; l: string }[]; onChange: (v: T) => void }) {
+/** A toggle group: the content it switches isn't a separate panel, so not tabs. */
+export function Segmented<T extends string | number>({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: T;
+  options: { v: T; l: string }[];
+  onChange: (v: T) => void;
+}) {
   return (
-    <div role="tablist" className="segmented">
+    <div role="group" aria-label={label} className="segmented">
       {options.map((o) => (
-        <button key={o.v} role="tab" aria-selected={value === o.v} onClick={() => onChange(o.v)}>
+        <button key={o.v} aria-pressed={value === o.v} onClick={() => onChange(o.v)}>
           {o.l}
         </button>
       ))}

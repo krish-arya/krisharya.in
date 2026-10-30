@@ -52,7 +52,7 @@ export function HomeGrid() {
       {DOCK.map((k) => (
         <button key={k} onClick={() => launch(k)} className="flex flex-col items-center gap-1.5">
           <Icon spec={resolve(k)!.icon} size={58} />
-          <span className="text-[11px] text-white drop-shadow">{resolve(k)!.name}</span>
+          <span className="text-[11px] text-[var(--fg)] dark:drop-shadow">{resolve(k)!.name}</span>
         </button>
       ))}
     </div>

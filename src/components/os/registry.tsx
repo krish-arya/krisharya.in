@@ -42,23 +42,23 @@ const WORLD_TINT: Record<string, [string, string]> = {
 
 export const projectIcon = (id: ProjectId): IconSpec => ({ tint: WORLD_TINT[projectById[id].world], glyph: glyphs.doc });
 
-/** Metadata for any window key, or null if the key names nothing. */
+/** Metadata for any window key, or null if the key names nothing. Keys come from the URL, so own properties only (no #constructor). */
 export function resolve(key: string): AppMeta | null {
   const [kind, arg] = key.split(":");
   if (kind === "project") {
-    const p = projectById[arg as ProjectId];
+    const p = Object.hasOwn(projectById, arg) ? projectById[arg as ProjectId] : undefined;
     return p ? { name: p.title, icon: projectIcon(p.id), size: [780, 640] } : null;
   }
   if (kind === "skill") {
-    const s = skillBySlug[arg];
+    const s = Object.hasOwn(skillBySlug, arg) ? skillBySlug[arg] : undefined;
     return s ? { name: s.name, icon: { tint: GROUP_TINT[s.group], glyph: mark(s.abbr) }, size: [460, 520] } : null;
   }
-  return (APPS as Record<string, AppMeta>)[kind] ?? null;
+  return Object.hasOwn(APPS, kind) ? (APPS as Record<string, AppMeta>)[kind] : null;
 }
 
-/** Opens (or brings forward) whatever a key names. */
-export function launch(key: string) {
+/** Opens (or brings forward) whatever a key names, and moves keyboard focus to it unless told not to. */
+export function launch(key: string, focus = true) {
   if (key === "skills") return os.launchpad(true);
   const m = resolve(key);
-  if (m) os.open(key, m.size);
+  if (m) os.open(key, m.size, focus);
 }

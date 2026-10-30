@@ -83,13 +83,16 @@ export function TerminalApp() {
     setH(-1);
     if (cmd.trim()) setHist((x) => [cmd, ...x]);
     if (cmd.trim() === "clear") return setLines([]);
-    setLines((l) => [...l, { cmd, out: run(cmd) }]);
+    // run outside the updater: it opens and closes windows, which mustn't happen during render
+    const out = run(cmd);
+    setLines((l) => [...l, { cmd, out }]);
   };
 
   const key = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowUp" || e.key === "ArrowDown") {
       e.preventDefault();
       const n = Math.max(-1, Math.min(hist.length - 1, h + (e.key === "ArrowUp" ? 1 : -1)));
+      if (n === h) return; // nothing further back (or forward): keep what's typed
       setH(n);
       setValue(n < 0 ? "" : hist[n]);
     }
@@ -98,17 +101,19 @@ export function TerminalApp() {
   return (
     <div className="terminal h-full overflow-y-auto px-4 py-3" onClick={() => input.current?.focus()}>
       <p className="text-[#8b8b8b]">Last login: {new Date().toDateString()} on ttys000</p>
-      {lines.map((l, i) => (
-        <div key={i}>
-          <p>
-            {PROMPT}
-            {l.cmd}
-          </p>
-          {l.out && <pre className="whitespace-pre-wrap text-[#d4d4d4]">{l.out}</pre>}
-        </div>
-      ))}
+      <div role="log" aria-live="polite" aria-relevant="additions">
+        {lines.map((l, i) => (
+          <div key={i}>
+            <p>
+              <span aria-hidden>{PROMPT}</span>
+              {l.cmd}
+            </p>
+            {l.out && <pre className="whitespace-pre-wrap text-[#d4d4d4]">{l.out}</pre>}
+          </div>
+        ))}
+      </div>
       <form onSubmit={submit} className="flex">
-        {PROMPT}
+        <span aria-hidden>{PROMPT}</span>
         <input
           ref={input}
           autoFocus

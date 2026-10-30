@@ -82,8 +82,8 @@ export function EvalInstrument() {
         <p className="mono max-w-[38ch] text-right text-paper-3">bot health = f(escalations, tool success, resolution, friction)</p>
       </div>
 
-      <div className="px-2 pt-3">
-        <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label="Four health channels and the composite bot-health score they produce.">
+      <div className="overflow-x-auto px-2 pt-3">
+        <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full min-w-[560px]" role="img" aria-label="Four health channels and the composite bot-health score they produce.">
           {CHANNELS.map((c, i) => {
             const dim = solo && solo !== c.id;
             return (

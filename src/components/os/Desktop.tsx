@@ -12,12 +12,17 @@ import { Window } from "./Window";
 
 export function Desktop() {
   const wins = useOs((s) => s.wins);
+  const spotlight = useOs((s) => s.spotlight);
+  const overlay = useOs((s) => s.spotlight || s.launchpad);
 
   // first paint: open whatever the URL names (#project/mutagen), else say hello
   useEffect(() => {
-    const k = decodeURIComponent(location.hash.slice(1)).replace("/", ":");
-    if (k && resolve(k)) launch(k);
-    else if (window.innerWidth >= 720) launch("about");
+    let k = "";
+    try {
+      k = decodeURIComponent(location.hash.slice(1)).replace("/", ":");
+    } catch {} // malformed escape (#%): fall through to the default
+    if (k && resolve(k)) launch(k, false);
+    else if (window.innerWidth >= 720) launch("about", false);
   }, []);
 
   useEffect(() => {
@@ -37,8 +42,11 @@ export function Desktop() {
 
   return (
     <div className="desktop">
-      <MenuBar />
-      <main id="main" className="workspace" onPointerDown={(e) => e.target === e.currentTarget && os.get().launchpad && os.launchpad(false)}>
+      {/* overlays make what's behind them inert; Launchpad sits under the menu bar and dock, which stay usable */}
+      <div inert={spotlight || undefined}>
+        <MenuBar />
+      </div>
+      <main id="main" tabIndex={-1} inert={overlay || undefined} className="workspace" onPointerDown={(e) => e.target === e.currentTarget && os.get().launchpad && os.launchpad(false)}>
         <Widgets />
         <HomeGrid />
         {wins.map((w) => (
@@ -47,7 +55,9 @@ export function Desktop() {
       </main>
       <Launchpad />
       <Spotlight />
-      <Dock />
+      <div inert={spotlight || undefined}>
+        <Dock />
+      </div>
     </div>
   );
 }

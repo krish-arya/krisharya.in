@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { os, useOs } from "@/lib/os";
 import { Icon, type IconSpec } from "./Icon";
 import { DOCK, LINKS, launch, resolve } from "./registry";
@@ -13,16 +13,27 @@ type Item = { id: string; name: string; icon: IconSpec; running: boolean; href?:
 
 export function Dock() {
   const wins = useOs((s) => s.wins);
-  const launchpad = useOs((s) => s.launchpad);
   const [scales, setScales] = useState<Record<string, number>>({});
+  const [fit, setFit] = useState(1);
   const refs = useRef<Record<string, HTMLElement | null>>({});
+  const ul = useRef<HTMLUListElement>(null);
 
   const open = new Set(wins.map((w) => w.key));
-  const items: Item[] = DOCK.map((k) => ({ id: k, name: resolve(k)!.name, icon: resolve(k)!.icon, running: k === "skills" ? launchpad : open.has(k) }));
+  const items: Item[] = DOCK.map((k) => ({ id: k, name: resolve(k)!.name, icon: resolve(k)!.icon, running: k === "skills" ? false : open.has(k) }));
   // documents and skill apps appear while they're open, like running apps
   const extra = wins.filter((w) => !(DOCK as string[]).includes(w.key));
   if (extra.length) items.push("sep", ...extra.map((w) => ({ id: w.key, name: resolve(w.key)!.name, icon: resolve(w.key)!.icon, running: true })));
   items.push("sep", ...LINKS.map((l) => ({ id: l.name, name: l.name, icon: l.icon, running: false, href: l.href })));
+
+  // every open document adds an icon; shrink the whole dock rather than let it run off both edges
+  useLayoutEffect(() => {
+    const measure = () => {
+      if (ul.current) setFit(Math.min(1, (window.innerWidth - 16) / ul.current.scrollWidth));
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [items.length]);
 
   // magnify by distance from the pointer, measured in the event, never during render
   const magnify = (e: React.PointerEvent) => {
@@ -39,15 +50,16 @@ export function Dock() {
 
   const click = (id: string) => {
     if (id === "skills") return os.launchpad();
-    // clicking the focused app's icon minimizes it, like macOS
-    const top = wins.filter((x) => !x.min).sort((a, b) => b.z - a.z)[0];
-    if (top?.key === id) os.minimize(id);
-    else launch(id);
+    launch(id);
   };
 
   return (
     <nav aria-label="Dock" className="dock-wrap">
-      <ul className="dock" onPointerMove={magnify} onPointerLeave={() => setScales({})}>
+      <ul
+        ref={ul}
+        className="dock"
+        style={fit < 1 ? { transform: `scale(${fit})`, transformOrigin: "bottom center" } : undefined}
+        onPointerMove={magnify} onPointerLeave={() => setScales({})}>
         {items.map((it, i) =>
           it === "sep" ? (
             <li key={`sep${i}`} className="dock-sep" aria-hidden />
@@ -61,7 +73,7 @@ export function Dock() {
               style={{ "--s": scales[it.id] ?? 1 } as React.CSSProperties}
             >
               {it.href ? (
-                <a href={it.href} target="_blank" rel="noreferrer" aria-label={it.name}>
+                <a href={it.href} target="_blank" rel="noreferrer" aria-label={it.name} draggable={false}>
                   <Icon spec={it.icon} size={BASE} />
                 </a>
               ) : (

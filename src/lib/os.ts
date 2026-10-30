@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 /**
  * Window manager. A window is addressed by a key:
@@ -47,6 +47,27 @@ function syncHash() {
   if (location.hash !== h.trim()) history.replaceState(null, "", h === " " ? location.pathname : h);
 }
 
+const winEl = (key: string) => document.querySelector<HTMLElement>(`[data-win="${CSS.escape(key)}"]`);
+const narrow = () => window.innerWidth < 720;
+
+/** Moves keyboard focus into a window, unless it's already there (Terminal autofocuses its input). */
+function focusWin(key: string) {
+  requestAnimationFrame(() => {
+    const el = winEl(key);
+    if (el && !el.contains(document.activeElement)) el.focus();
+  });
+}
+
+/** After a window closes or hides, hand focus to the next window (or the desktop) instead of <body>. */
+function refocus(gone: string) {
+  requestAnimationFrame(() => {
+    const a = document.activeElement;
+    if (a && a !== document.body && !winEl(gone)?.contains(a)) return;
+    const next = focused();
+    (next ? winEl(next.key) : document.getElementById("main"))?.focus();
+  });
+}
+
 export const os = {
   get: () => state,
   subscribe(l: () => void) {
@@ -54,7 +75,7 @@ export const os = {
     return () => listeners.delete(l);
   },
 
-  open(key: string, size: [number, number]) {
+  open(key: string, size: [number, number], focus = true) {
     const hit = state.wins.find((w) => w.key === key);
     if (hit) {
       set((s) => ({ wins: s.wins.map((w) => (w.key === key ? { ...w, min: false, z: ++top } : w)), launchpad: false, spotlight: false }));
@@ -65,8 +86,9 @@ export const os = {
       const h = Math.min(size[1], vh - 24);
       // cascade new windows so they never stack exactly
       const n = state.wins.filter((x) => !x.min).length % 6;
-      const x = Math.max(16, Math.round((vw - w) / 2) + n * 28 - 70);
-      const y = Math.max(12, Math.round((vh - h) / 2.4) + n * 24);
+      // …but keep them clear of the dock and the right edge
+      const x = Math.min(Math.max(16, Math.round((vw - w) / 2) + n * 28 - 70), Math.max(16, vw - w - 16));
+      const y = Math.min(Math.max(12, Math.round((vh - h) / 2.4) + n * 24), Math.max(12, vh - h - 8));
       set((s) => ({
         wins: [...s.wins, { key, z: ++top, min: false, max: vw < 720, x, y, w, h }],
         launchpad: false,
@@ -74,21 +96,27 @@ export const os = {
       }));
     }
     syncHash();
+    if (focus) focusWin(key);
   },
   close(key: string) {
     set((s) => ({ wins: s.wins.filter((w) => w.key !== key) }));
     syncHash();
+    refocus(key);
   },
   focus(key: string) {
     if (focused()?.key === key) return;
     set((s) => ({ wins: s.wins.map((w) => (w.key === key ? { ...w, z: ++top } : w)) }));
     syncHash();
   },
+  // phones have no dock to minimize to and windows are always full screen
   minimize(key: string) {
+    if (narrow()) return;
     set((s) => ({ wins: s.wins.map((w) => (w.key === key ? { ...w, min: true } : w)) }));
     syncHash();
+    refocus(key);
   },
   toggleMax(key: string) {
+    if (narrow()) return;
     set((s) => ({ wins: s.wins.map((w) => (w.key === key ? { ...w, max: !w.max, z: ++top } : w)) }));
   },
   move(key: string, patch: Partial<Pick<Win, "x" | "y" | "w" | "h">>) {
@@ -107,5 +135,20 @@ export function useOs<T>(select: (s: OsState) => T): T {
     os.subscribe,
     () => select(state),
     () => select(state),
+  );
+}
+
+/** For overlays: when they close, give focus back to what had it, unless something else (a new window) took it. */
+export function useRestoreFocus() {
+  // read during render: by the time effects run, the overlay's autoFocus input already has focus
+  const [prev] = useState(() => (typeof document === "undefined" ? null : (document.activeElement as HTMLElement | null)));
+  useEffect(
+    () => () => {
+      requestAnimationFrame(() => {
+        const a = document.activeElement;
+        if (!a || a === document.body) prev?.focus();
+      });
+    },
+    [prev],
   );
 }

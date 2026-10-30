@@ -35,11 +35,11 @@ export function ProjectsApp() {
           <h2 className="text-[15px] font-semibold">{here?.name ?? "All Projects"}</h2>
           <p className="truncate text-[12px] text-[var(--fg-3)]">{here?.theme ?? "Products, production systems, research"}</p>
         </div>
-        <div className="segmented shrink-0" role="tablist" aria-label="View">
-          <button role="tab" aria-selected={view === "grid"} onClick={() => setView("grid")}>
+        <div className="segmented shrink-0" role="group" aria-label="View">
+          <button aria-pressed={view === "grid"} onClick={() => setView("grid")}>
             Icons
           </button>
-          <button role="tab" aria-selected={view === "list"} onClick={() => setView("list")}>
+          <button aria-pressed={view === "list"} onClick={() => setView("list")}>
             List
           </button>
         </div>
@@ -68,10 +68,17 @@ export function ProjectsApp() {
             {shown.map((p) => (
               <tr key={p.id} onClick={() => launch(`project:${p.id}`)} className="row cursor-pointer">
                 <td className="px-2 py-1.5">
-                  <span className="flex items-center gap-2">
+                  {/* the row click is a mouse convenience; the button is what keyboards reach */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      launch(`project:${p.id}`);
+                    }}
+                    className="flex items-center gap-2 text-left"
+                  >
                     <Icon spec={projectIcon(p.id)} size={20} />
                     {p.title}
-                  </span>
+                  </button>
                 </td>
                 <td className="hidden px-2 py-1.5 text-[var(--fg-3)] capitalize sm:table-cell">{p.world}</td>
                 <td className="hidden px-2 py-1.5 text-[var(--fg-3)] md:table-cell">{p.meta[0]}</td>
