@@ -19,7 +19,9 @@ function Panel() {
   const [sel, setSel] = useState(0);
   const hits = q.trim() ? search(q) : SUGGESTED.map((k) => index.find((h) => h.key === k)!);
   useRestoreFocus();
-  useEffect(() => document.getElementById(`spot-${sel}`)?.scrollIntoView({ block: "nearest" }), [sel]);
+  useEffect(() => {
+    document.getElementById(`spot-${sel}`)?.scrollIntoView({ block: "nearest" });
+  }, [sel]);
 
   const key = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowDown" || e.key === "ArrowUp") {

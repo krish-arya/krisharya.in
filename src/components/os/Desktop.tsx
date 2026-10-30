@@ -2,11 +2,14 @@
 
 import { useEffect } from "react";
 import { os, useOs } from "@/lib/os";
+import { DesktopIcons } from "./DesktopIcons";
 import { Dock } from "./Dock";
 import { Launchpad } from "./Launchpad";
+import { LockScreen } from "./LockScreen";
 import { MenuBar } from "./MenuBar";
 import { launch, resolve } from "./registry";
 import { Spotlight } from "./Spotlight";
+import { Wallpaper } from "./Wallpaper";
 import { HomeGrid, Widgets } from "./Widgets";
 import { Window } from "./Window";
 
@@ -42,12 +45,14 @@ export function Desktop() {
 
   return (
     <div className="desktop">
+      <Wallpaper />
       {/* overlays make what's behind them inert; Launchpad sits under the menu bar and dock, which stay usable */}
       <div inert={spotlight || undefined}>
         <MenuBar />
       </div>
       <main id="main" tabIndex={-1} inert={overlay || undefined} className="workspace" onPointerDown={(e) => e.target === e.currentTarget && os.get().launchpad && os.launchpad(false)}>
         <Widgets />
+        <DesktopIcons />
         <HomeGrid />
         {wins.map((w) => (
           <Window key={w.key} win={w} />
@@ -58,6 +63,7 @@ export function Desktop() {
       <div inert={spotlight || undefined}>
         <Dock />
       </div>
+      <LockScreen />
     </div>
   );
 }

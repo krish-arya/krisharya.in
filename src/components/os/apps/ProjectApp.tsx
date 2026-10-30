@@ -5,7 +5,7 @@ import { projectById, worlds, type ProjectId } from "@/content/data";
 import { skillsFor } from "@/content/skills";
 import { Diagram } from "@/components/diagrams/Diagram";
 import { Icon } from "../Icon";
-import { launch, resolve } from "../registry";
+import { WORLD_TINT, launch, projectIcon, resolve } from "../registry";
 import { Blocks, Section, Segmented, Stats, Tag } from "../ui";
 
 const LEVELS = ["What", "How", "Why", "Build"];
@@ -18,13 +18,20 @@ export function ProjectApp({ id }: { id: ProjectId }) {
 
   return (
     <div className="h-full overflow-y-auto">
-      <article className="mx-auto max-w-[720px] px-6 pt-6 pb-12 md:px-10">
-        <p className="text-[12px] font-medium text-[var(--fg-3)]">
-          {world.name} · {p.code}
-        </p>
-        <h1 className="mt-1 text-[28px] leading-tight font-semibold tracking-tight">{p.title}</h1>
-        <p className="mt-2 text-[17px] leading-snug text-[var(--fg-2)]">{p.kicker}</p>
-        <p className="mt-3 text-[13px] text-[var(--fg-3)]">{p.meta.join("  ·  ")}</p>
+      <header className="banner" style={{ "--a": WORLD_TINT[p.world][0], "--b": WORLD_TINT[p.world][1] } as React.CSSProperties}>
+        <div className="mx-auto flex max-w-[720px] items-end gap-5 px-6 md:px-10">
+          <div className="min-w-0 flex-1">
+            <p className="text-[12px] font-semibold tracking-wide text-white/80 uppercase">
+              {world.name} · {p.code}
+            </p>
+            <h1 className="mt-1 text-[30px] leading-tight font-semibold tracking-tight text-white">{p.title}</h1>
+            <p className="mt-2 text-[16px] leading-snug text-white/90">{p.kicker}</p>
+          </div>
+          <Icon spec={projectIcon(id)} size={84} className="banner-icon hidden shrink-0 sm:inline-block" />
+        </div>
+      </header>
+      <article className="mx-auto max-w-[720px] px-6 pt-5 pb-12 md:px-10">
+        <p className="text-[13px] text-[var(--fg-3)]">{p.meta.join("  ·  ")}</p>
 
         {p.status && <p className="callout mt-4">{p.status}</p>}
         {p.authors && <p className="mt-3 text-[13px] text-[var(--fg-3)]">{p.authors}</p>}

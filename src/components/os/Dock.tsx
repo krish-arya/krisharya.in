@@ -15,6 +15,7 @@ export function Dock() {
   const wins = useOs((s) => s.wins);
   const [scales, setScales] = useState<Record<string, number>>({});
   const [fit, setFit] = useState(1);
+  const [bounce, setBounce] = useState<string | null>(null);
   const refs = useRef<Record<string, HTMLElement | null>>({});
   const ul = useRef<HTMLUListElement>(null);
 
@@ -50,6 +51,11 @@ export function Dock() {
 
   const click = (id: string) => {
     if (id === "skills") return os.launchpad();
+    // a cold start bounces, like an app launching
+    if (!open.has(id)) {
+      setBounce(id);
+      setTimeout(() => setBounce((b) => (b === id ? null : b)), 700);
+    }
     launch(id);
   };
 
@@ -69,7 +75,7 @@ export function Dock() {
               ref={(el) => {
                 refs.current[it.id] = el;
               }}
-              className="dock-item"
+              className={`dock-item ${bounce === it.id ? "is-bounce" : ""}`}
               style={{ "--s": scales[it.id] ?? 1 } as React.CSSProperties}
             >
               {it.href ? (

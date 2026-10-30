@@ -74,7 +74,10 @@ export function TerminalApp() {
   const input = useRef<HTMLInputElement>(null);
   const end = useRef<HTMLDivElement>(null);
 
-  useEffect(() => end.current?.scrollIntoView({ block: "end" }), [lines]);
+  // braces matter: scrollIntoView returns a Promise in current browsers, and an effect may only return a cleanup function
+  useEffect(() => {
+    end.current?.scrollIntoView({ block: "end" });
+  }, [lines]);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();

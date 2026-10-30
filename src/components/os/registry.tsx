@@ -3,7 +3,7 @@
 import { person, projectById, type ProjectId } from "@/content/data";
 import { GROUP_TINT, skillBySlug } from "@/content/skills";
 import { os } from "@/lib/os";
-import { glyphs, mark, type IconSpec } from "./Icon";
+import { docFace, element, glyphs, type IconSpec } from "./Icon";
 
 export interface AppMeta {
   name: string;
@@ -14,33 +14,54 @@ export interface AppMeta {
 }
 
 export const APPS = {
-  about: { name: "About Krish", icon: { tint: ["#4b5563", "#111827"], glyph: glyphs.monogram }, size: [580, 700] },
-  projects: { name: "Projects", icon: { tint: ["#7cc4ff", "#1e6fe0"], glyph: glyphs.folder }, size: [920, 600] },
-  skills: { name: "Skills", icon: { tint: ["#e5e7eb", "#9ca3af"], glyph: glyphs.grid, ink: true }, size: [0, 0] },
-  experience: { name: "Experience", icon: { tint: ["#fcd34d", "#d97706"], glyph: glyphs.briefcase }, size: [880, 580] },
-  papers: { name: "Papers", icon: { tint: ["#fca5a5", "#dc2626"], glyph: glyphs.paper }, size: [900, 620] },
-  notes: { name: "Notes", icon: { tint: ["#fffbe6", "#fde68a"], glyph: glyphs.note, ink: true }, size: [820, 560] },
-  terminal: { name: "Terminal", icon: { tint: ["#3f3f46", "#09090b"], glyph: glyphs.terminal }, size: [680, 440] },
-  mail: { name: "Mail", title: "New Message", icon: { tint: ["#93c5fd", "#2563eb"], glyph: glyphs.mail }, size: [620, 560] },
+  about: { name: "About Krish", icon: { tint: ["#5b6170", "#15171c"], glyph: glyphs.monogram }, size: [580, 700] },
+  projects: { name: "Projects", icon: { tint: ["#7cc8ff", "#1e6fe0"], glyph: glyphs.folder }, size: [920, 600] },
+  skills: { name: "Skills", icon: { tint: ["#3a3a3e", "#111114"], glyph: glyphs.grid }, size: [0, 0] },
+  experience: { name: "Experience", icon: { tint: ["#ffd25e", "#f59e0b"], glyph: glyphs.briefcase }, size: [880, 580] },
+  papers: { name: "Papers", icon: { tint: ["#ff8a80", "#e5322d"], glyph: glyphs.paper }, size: [900, 620] },
+  notes: { name: "Notes", icon: { tint: ["#fff", "#fff"], glyph: glyphs.note, ink: true }, size: [820, 560] },
+  terminal: { name: "Terminal", icon: { tint: ["#4a4a50", "#0d0d0f"], glyph: glyphs.terminal }, size: [680, 440] },
+  mail: { name: "Mail", title: "New Message", icon: { tint: ["#6ec6ff", "#1a6cf0"], glyph: glyphs.mail }, size: [620, 560] },
+  settings: { name: "System Settings", icon: { tint: ["#9a9aa2", "#4a4a52"], glyph: glyphs.gear }, size: [680, 600] },
 } satisfies Record<string, AppMeta>;
 
 export type AppId = keyof typeof APPS;
 
-export const DOCK: AppId[] = ["projects", "skills", "experience", "papers", "notes", "terminal", "mail", "about"];
+export const DOCK: AppId[] = ["projects", "skills", "experience", "papers", "notes", "terminal", "mail", "about", "settings"];
 
 export const LINKS: { name: string; href: string; icon: IconSpec }[] = [
   { name: "GitHub", href: person.links[0].href, icon: { tint: ["#52525b", "#18181b"], glyph: glyphs.code } },
   { name: "LinkedIn", href: person.links[1].href, icon: { tint: ["#60a5fa", "#0a66c2"], glyph: glyphs.in } },
 ];
 
-const WORLD_TINT: Record<string, [string, string]> = {
-  build: ["#86efac", "#15803d"],
-  engineer: ["#7dd3fc", "#0369a1"],
-  research: ["#fca5a5", "#b91c1c"],
-  integrate: ["#c4b5fd", "#6d28d9"],
+export const WORLD_TINT: Record<string, [string, string]> = {
+  build: ["#34d399", "#0f8a5f"],
+  engineer: ["#38bdf8", "#1d5fd6"],
+  research: ["#fb7185", "#c81e4a"],
+  integrate: ["#a78bfa", "#6d28d9"],
 };
 
-export const projectIcon = (id: ProjectId): IconSpec => ({ tint: WORLD_TINT[projectById[id].world], glyph: glyphs.doc });
+const INITIALS: Record<ProjectId, string> = {
+  bylin: "By",
+  mutagen: "Mu",
+  folio: "Lf",
+  voice: "Vo",
+  rag: "Kb",
+  eval: "Ev",
+  easydarshan: "Ed",
+  v2v: "V2",
+  nl2sql: "Sq",
+  scam: "Sc",
+  xai: "Xa",
+  env: "En",
+  mira: "Mi",
+};
+
+export const projectIcon = (id: ProjectId): IconSpec => ({
+  tint: WORLD_TINT[projectById[id].world],
+  glyph: docFace(projectById[id].code, INITIALS[id]),
+  shape: "doc",
+});
 
 /** Metadata for any window key, or null if the key names nothing. Keys come from the URL, so own properties only (no #constructor). */
 export function resolve(key: string): AppMeta | null {
@@ -51,7 +72,7 @@ export function resolve(key: string): AppMeta | null {
   }
   if (kind === "skill") {
     const s = Object.hasOwn(skillBySlug, arg) ? skillBySlug[arg] : undefined;
-    return s ? { name: s.name, icon: { tint: GROUP_TINT[s.group], glyph: mark(s.abbr) }, size: [460, 520] } : null;
+    return s ? { name: s.name, icon: { tint: GROUP_TINT[s.group], glyph: element(s.n, s.abbr) }, size: [460, 520] } : null;
   }
   return Object.hasOwn(APPS, kind) ? (APPS as Record<string, AppMeta>)[kind] : null;
 }

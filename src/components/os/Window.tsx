@@ -10,6 +10,7 @@ import { NotesApp } from "./apps/NotesApp";
 import { PapersApp } from "./apps/PapersApp";
 import { ProjectApp } from "./apps/ProjectApp";
 import { ProjectsApp } from "./apps/ProjectsApp";
+import { SettingsApp } from "./apps/SettingsApp";
 import { SkillApp } from "./apps/SkillApp";
 import { TerminalApp } from "./apps/TerminalApp";
 import { resolve } from "./registry";
@@ -35,6 +36,8 @@ function AppView({ k }: { k: string }) {
       return <TerminalApp />;
     case "mail":
       return <MailApp />;
+    case "settings":
+      return <SettingsApp />;
     default:
       return null;
   }

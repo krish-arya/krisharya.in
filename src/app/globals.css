@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* theme is resolved before paint (lib/prepaint.ts) and written to html[data-theme] */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 /* ───────────── tokens. --fg/--win/… drive the desktop; --ink/--paper/… drive the
    architecture diagrams, which render on a dark canvas in both themes. */
 :root {
@@ -25,10 +28,6 @@
   --warn-bg: rgba(255, 159, 10, 0.13);
   --warn-fg: #9a5200;
 
-  --wallpaper:
-    radial-gradient(55% 75% at 12% 18%, #ffd9c7 0%, transparent 62%), radial-gradient(50% 70% at 88% 22%, #c6d6ff 0%, transparent 60%),
-    radial-gradient(70% 65% at 62% 100%, #dccbff 0%, transparent 62%), radial-gradient(40% 50% at 40% 55%, #fff1e0 0%, transparent 70%), #eceef5;
-
   --ink-0: #0c0c0b;
   --ink-1: #131311;
   --ink-2: #1b1b18;
@@ -51,37 +50,33 @@
   --menu-h: 28px;
   --dock-h: 84px;
 
-  color-scheme: light dark;
+  color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --fg: #f5f5f7;
-    --fg-2: rgba(245, 245, 247, 0.76);
-    --fg-3: rgba(245, 245, 247, 0.5);
-    --sep: rgba(255, 255, 255, 0.1);
-    --hover: rgba(255, 255, 255, 0.06);
-    --sel: rgba(255, 255, 255, 0.1);
-    --accent: #0a84ff;
+/* dark: chosen in System Settings, or following the system in Auto */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --fg: #f5f5f7;
+  --fg-2: rgba(245, 245, 247, 0.76);
+  --fg-3: rgba(245, 245, 247, 0.5);
+  --sep: rgba(255, 255, 255, 0.1);
+  --hover: rgba(255, 255, 255, 0.06);
+  --sel: rgba(255, 255, 255, 0.1);
+  --accent: #0a84ff;
 
-    --win: #1e1e20;
-    --win-bar: #2a2a2c;
-    --sidebar: #252527;
-    --card: #2a2a2d;
-    --seg-bg: rgba(255, 255, 255, 0.08);
-    --seg-on: #5a5a5e;
-    --bar: rgba(28, 28, 32, 0.5);
-    --menu: rgba(40, 40, 44, 0.82);
-    --widget: rgba(30, 30, 36, 0.5);
-    --dock: rgba(40, 40, 46, 0.38);
-    --light-off: #4a4a4c;
-    --warn-bg: rgba(255, 159, 10, 0.16);
-    --warn-fg: #ffb340;
-
-    --wallpaper:
-      radial-gradient(55% 75% at 12% 18%, #4a2a4f 0%, transparent 62%), radial-gradient(50% 70% at 88% 22%, #1d3768 0%, transparent 60%),
-      radial-gradient(70% 65% at 62% 100%, #3a2466 0%, transparent 62%), #0e1018;
-  }
+  --win: #1e1e20;
+  --win-bar: #2a2a2c;
+  --sidebar: #252527;
+  --card: #2a2a2d;
+  --seg-bg: rgba(255, 255, 255, 0.08);
+  --seg-on: #5a5a5e;
+  --bar: rgba(28, 28, 32, 0.5);
+  --menu: rgba(40, 40, 44, 0.82);
+  --widget: rgba(30, 30, 36, 0.5);
+  --dock: rgba(40, 40, 46, 0.38);
+  --light-off: #4a4a4c;
+  --warn-bg: rgba(255, 159, 10, 0.16);
+  --warn-fg: #ffb340;
 }
 
 @theme inline {
@@ -111,8 +106,7 @@ body {
 }
 
 body {
-  background: var(--wallpaper);
-  background-attachment: fixed;
+  background: var(--w0, #1c1c1e);
   color: var(--fg);
   font-family: var(--font-sans);
   font-size: 14px;
@@ -308,6 +302,8 @@ button {
 
 /* ───────────── app icon */
 .app-icon {
+  position: relative;
+  overflow: hidden;
   display: inline-grid;
   place-items: center;
   flex-shrink: 0;
@@ -858,6 +854,491 @@ button {
     opacity: 0;
     transform: scale(1.04);
   }
+}
+
+/* ───────────── wallpaper: four drifting colour fields, soft waves, film grain */
+:root,
+[data-wall="ember"] {
+  --w0: #ff8a4c;
+  --w1: #ff3d6e;
+  --w2: #ffb340;
+  --w3: #b14bff;
+  --w4: #ff6a2b;
+}
+[data-wall="lagoon"] {
+  --w0: #2a6bff;
+  --w1: #00d4c8;
+  --w2: #7ee8fa;
+  --w3: #7b5cff;
+  --w4: #1fa2ff;
+}
+[data-wall="bloom"] {
+  --w0: #ff7ac6;
+  --w1: #8f5bff;
+  --w2: #ffc2e2;
+  --w3: #5b8cff;
+  --w4: #ff5e9a;
+}
+[data-wall="meadow"] {
+  --w0: #2fb57a;
+  --w1: #c4f06a;
+  --w2: #f9e45b;
+  --w3: #138f8a;
+  --w4: #5fd68f;
+}
+[data-wall="graphite"] {
+  --w0: #3a3a40;
+  --w1: #6b6b78;
+  --w2: #8e8e99;
+  --w3: #1c1c21;
+  --w4: #55555f;
+}
+
+.wallpaper {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: var(--w0);
+  transition: background 600ms var(--ease);
+}
+.wallpaper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 8, 18, 0);
+  transition: background 400ms;
+}
+[data-theme="dark"] .wallpaper::after {
+  background: rgba(8, 8, 18, 0.45);
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  will-change: transform;
+  transition: background 600ms var(--ease);
+  animation: drift 40s ease-in-out infinite alternate;
+}
+.b1 {
+  width: 70vmax;
+  height: 58vmax;
+  left: -22vmax;
+  top: -26vmax;
+  background: var(--w1);
+}
+.b2 {
+  width: 62vmax;
+  height: 54vmax;
+  right: -24vmax;
+  top: -20vmax;
+  background: var(--w3);
+  animation-duration: 48s;
+  animation-direction: alternate-reverse;
+}
+.b3 {
+  width: 84vmax;
+  height: 50vmax;
+  left: 0;
+  bottom: -30vmax;
+  background: var(--w2);
+  animation-duration: 54s;
+}
+.b4 {
+  width: 40vmax;
+  height: 38vmax;
+  left: 38vw;
+  top: 24vh;
+  background: var(--w4);
+  opacity: 0.75;
+  animation-duration: 32s;
+}
+@keyframes drift {
+  to {
+    transform: translate3d(6vmax, 4vmax, 0) scale(1.12) rotate(8deg);
+  }
+}
+
+.waves {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  mix-blend-mode: soft-light;
+}
+.waves path {
+  fill: rgba(255, 255, 255, 0.4);
+}
+.waves path:nth-child(2) {
+  fill: rgba(255, 255, 255, 0.3);
+}
+.waves path:nth-child(3) {
+  fill: rgba(0, 0, 0, 0.12);
+}
+
+.grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.09;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* ───────────── icon details: gloss, elements, documents */
+.app-icon::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent 46%);
+  pointer-events: none;
+}
+
+.el-n {
+  position: absolute;
+  top: 0.1em;
+  left: 0.13em;
+  font-size: 0.15em;
+  font-weight: 600;
+  line-height: 1;
+  opacity: 0.85;
+}
+.el-sym {
+  font-size: 0.42em;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.doc-icon {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.2)) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.12));
+}
+.doc-paper {
+  position: relative;
+  width: 76%;
+  height: 96%;
+  overflow: hidden;
+  border-radius: 0.04em;
+  background: #fff;
+  clip-path: polygon(0 0, 74% 0, 100% 20%, 100% 100%, 0 100%);
+}
+.doc-paper::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 26%;
+  height: 20%;
+  background: linear-gradient(to bottom left, transparent 50%, #dedee4 50%);
+}
+.doc-mark {
+  position: absolute;
+  top: 25%;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 0.3em;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  background: linear-gradient(160deg, var(--a), var(--b));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.doc-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 11%;
+  height: 17%;
+  display: grid;
+  place-items: center;
+  font-size: 0.11em;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: linear-gradient(90deg, var(--a), var(--b));
+}
+
+/* ───────────── boot + lock screen */
+.boot-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 10001;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 52px;
+  color: #fff;
+  background: #000;
+  /* if scripts never run, don't trap the visitor behind it */
+  animation: boot-gone 0s 8s forwards;
+}
+html[data-boot="skip"] .boot-screen {
+  display: none;
+}
+/* like a real lock screen: only the wallpaper until you're in (no-JS visitors get it back with the boot frame) */
+html:not([data-boot="skip"]) :is(.workspace, .menubar, .dock-wrap) {
+  visibility: hidden;
+  animation: boot-shown 0s 8s forwards;
+}
+@keyframes boot-shown {
+  to {
+    visibility: visible;
+  }
+}
+.boot-logo {
+  font-size: 68px;
+  font-weight: 700;
+  letter-spacing: -0.045em;
+}
+.boot-bar {
+  width: 180px;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.22);
+}
+.boot-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #fff;
+  transform-origin: left;
+  animation: boot-fill 1.4s cubic-bezier(0.45, 0, 0.25, 1) forwards;
+}
+@keyframes boot-fill {
+  from {
+    transform: scaleX(0);
+  }
+}
+@keyframes boot-gone {
+  to {
+    visibility: hidden;
+  }
+}
+
+.lock {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9vh 16px 10vh;
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.18);
+  background: rgba(0, 0, 0, 0.08);
+  user-select: none;
+  animation: lock-in 700ms var(--ease);
+  transition:
+    opacity 600ms var(--ease),
+    transform 600ms var(--ease);
+}
+.lock.is-out {
+  opacity: 0;
+  transform: scale(1.06);
+  pointer-events: none;
+}
+.lock-clock {
+  margin-top: 2px;
+  font-size: clamp(88px, 14vw, 156px);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.lock-user {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.lock-enter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  margin-top: 16px;
+  padding: 0 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.2);
+  border: 0.5px solid rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: background 150ms;
+}
+.lock-enter:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+@keyframes lock-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* ───────────── desktop icons */
+.desk-icons {
+  display: none;
+}
+@media (min-width: 720px) {
+  .desk-icons {
+    position: absolute;
+    top: calc(var(--menu-h) + 18px);
+    right: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+.desk-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 92px;
+  padding: 6px 4px;
+  border-radius: 8px;
+}
+.desk-icon:hover {
+  background: rgba(0, 0, 0, 0.12);
+}
+.desk-label {
+  margin-top: 4px;
+  padding: 0 5px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+}
+.desk-icon:focus-visible {
+  outline: none;
+}
+.desk-icon:focus-visible .desk-label {
+  background: var(--accent);
+  text-shadow: none;
+}
+
+/* ───────────── dock launch bounce */
+.dock-item.is-bounce .app-icon,
+.dock-item.is-bounce .doc-icon {
+  animation: dock-bounce 700ms cubic-bezier(0.3, 0, 0.3, 1);
+}
+@keyframes dock-bounce {
+  0%,
+  50%,
+  100% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-22px);
+  }
+  72% {
+    transform: translateY(-9px);
+  }
+}
+
+/* ───────────── project window banner */
+.banner {
+  position: relative;
+  overflow: hidden;
+  padding: 30px 0 24px;
+  background: linear-gradient(135deg, var(--a), var(--b));
+}
+.banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(60% 140% at 92% -10%, rgba(255, 255, 255, 0.32), transparent 60%),
+    radial-gradient(50% 120% at 0% 120%, rgba(0, 0, 0, 0.18), transparent 60%);
+}
+.banner > * {
+  position: relative;
+}
+.banner-icon {
+  transform: rotate(6deg) translateY(6px);
+}
+
+/* ───────────── System Settings controls */
+.look-swatch {
+  position: relative;
+  display: block;
+  width: 96px;
+  height: 62px;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 0.5px solid var(--sep);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+.look-swatch > span {
+  position: absolute;
+  inset: 14px 18px -4px 14px;
+  border-radius: 6px 6px 0 0;
+  box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.15);
+}
+.look-light {
+  background: linear-gradient(135deg, var(--w1), var(--w3));
+}
+.look-light > span {
+  background: #fff;
+}
+.look-dark {
+  background: linear-gradient(135deg, #2a1830, #101828);
+}
+.look-dark > span {
+  background: #2c2c2e;
+}
+.look-auto {
+  background: linear-gradient(90deg, var(--w1) 50%, #1b1b28 50%);
+}
+.look-auto > span {
+  background: linear-gradient(90deg, #fff 50%, #2c2c2e 50%);
+}
+.look[aria-checked="true"] .look-swatch,
+.wall-pick[aria-checked="true"] .wall-thumb {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+.look[aria-checked="true"] > span:last-child,
+.wall-pick[aria-checked="true"] > span:last-child {
+  font-weight: 600;
+}
+
+.accent-dot {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.2);
+}
+.accent-dot[aria-checked="true"]::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.wall-pick {
+  text-align: center;
+}
+.wall-thumb {
+  display: block;
+  aspect-ratio: 16 / 10;
+  border-radius: 10px;
+  border: 0.5px solid var(--sep);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
 
 /* ───────────── diagram primitives (used inside .canvas) */

@@ -5,10 +5,19 @@ export interface IconSpec {
   glyph: ReactNode;
   /** Dark glyph on a light tile. */
   ink?: boolean;
+  /** tile: rounded square (apps) · doc: a sheet of paper (project documents). */
+  shape?: "tile" | "doc";
 }
 
-/** A macOS-style app tile: rounded square, soft gradient, inner highlight. */
+/** A macOS-style icon. Glyphs are sized in em, and the icon's font-size is its pixel size. */
 export function Icon({ spec, size = 56, className = "" }: { spec: IconSpec; size?: number; className?: string }) {
+  if (spec.shape === "doc") {
+    return (
+      <span aria-hidden className={`doc-icon ${className}`} style={{ width: size, height: size, fontSize: size, "--a": spec.tint[0], "--b": spec.tint[1] } as React.CSSProperties}>
+        <span className="doc-paper">{spec.glyph}</span>
+      </span>
+    );
+  }
   return (
     <span
       aria-hidden
@@ -20,49 +29,93 @@ export function Icon({ spec, size = 56, className = "" }: { spec: IconSpec; size
   );
 }
 
-const svg = (d: ReactNode) => (
-  <svg viewBox="0 0 24 24" width="52%" height="52%" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+/** Full-bleed artwork on a 100×100 grid. */
+const art = (d: ReactNode) => (
+  <svg viewBox="0 0 100 100" width="100%" height="100%" className="absolute inset-0">
     {d}
   </svg>
 );
 
-/** Skill tiles read like element symbols: two letters, set large. */
-export const mark = (abbr: string) => <span className="icon-mark">{abbr}</span>;
+/** Skill tiles are elements: atomic number, symbol. */
+export const element = (n: number, abbr: string) => (
+  <>
+    <span className="el-n">{n}</span>
+    <span className="el-sym">{abbr}</span>
+  </>
+);
+
+/** Project documents: a coloured band with the code, the initials set large. */
+export const docFace = (code: string, initials: string) => (
+  <>
+    <span className="doc-band">{code}</span>
+    <span className="doc-mark">{initials}</span>
+  </>
+);
+
+const DOTS = ["#a78bfa", "#5eead4", "#f9a8d4", "#7dd3fc", "#fdba74", "#cbd5e1", "#fde047", "#86efac", "#fca5a5"];
 
 export const glyphs = {
-  folder: svg(<path d="M3 7.5A1.5 1.5 0 0 1 4.5 6h4l2 2h9A1.5 1.5 0 0 1 21 9.5v8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z" />),
-  grid: svg(
+  folder: art(
     <>
-      {[5, 12, 19].flatMap((y) => [5, 12, 19].map((x) => <circle key={`${x}${y}`} cx={x} cy={y} r={1.6} fill="currentColor" stroke="none" />))}
+      <path d="M18 34a5 5 0 0 1 5-5h17l6 6h31a5 5 0 0 1 5 5v31a5 5 0 0 1-5 5H23a5 5 0 0 1-5-5z" fill="rgba(255,255,255,.55)" />
+      <path d="M18 43a5 5 0 0 1 5-5h54a5 5 0 0 1 5 5v28a5 5 0 0 1-5 5H23a5 5 0 0 1-5-5z" fill="#fff" />
+      <path d="M38 55h24" stroke="#5aa6ff" strokeWidth="3" strokeLinecap="round" />
     </>,
   ),
-  briefcase: svg(
+  grid: art(DOTS.map((c, i) => <circle key={c} cx={30 + (i % 3) * 20} cy={30 + Math.floor(i / 3) * 20} r={7} fill={c} />)),
+  briefcase: art(
     <>
-      <rect x="3" y="7.5" width="18" height="12" rx="2" />
-      <path d="M9 7.5V6a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 6v1.5M3 12.5h18" />
+      <path d="M39 33v-4a4 4 0 0 1 4-4h14a4 4 0 0 1 4 4v4" fill="none" stroke="#fff" strokeWidth="5" />
+      <rect x="20" y="33" width="60" height="42" rx="7" fill="#fff" />
+      <path d="M20 50h60" stroke="#e59a12" strokeWidth="3" />
+      <rect x="45" y="46" width="10" height="9" rx="2" fill="#e59a12" />
     </>,
   ),
-  paper: svg(
+  paper: art(
     <>
-      <path d="M6.5 3h8l4 4v13a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
-      <path d="M14.5 3v4h4M8.5 11h7M8.5 14h7M8.5 17h4" />
+      <rect x="30" y="20" width="44" height="58" rx="4" fill="rgba(255,255,255,.5)" transform="rotate(8 52 49)" />
+      <rect x="26" y="22" width="44" height="58" rx="4" fill="#fff" />
+      <path d="M33 34h30M33 42h30M33 50h22M33 62h30M33 70h18" stroke="#ef4444" strokeWidth="3" strokeLinecap="round" opacity=".75" />
     </>,
   ),
-  note: svg(<path d="M7 8h10M7 12h10M7 16h6" />),
-  terminal: svg(<path d="M5 8l4 4-4 4M12 16h7" />),
-  mail: svg(
+  note: art(
     <>
-      <rect x="3" y="5.5" width="18" height="13" rx="2" />
-      <path d="M3.5 7l8.5 6 8.5-6" />
+      <rect width="100" height="100" fill="#fff" />
+      <rect width="100" height="30" fill="#ffd426" />
+      <path d="M0 30h100" stroke="#e6b800" strokeWidth="1.5" strokeDasharray="2 3" />
+      <path d="M14 48h72M14 62h72M14 76h72" stroke="#d1d1d6" strokeWidth="2" />
     </>,
   ),
-  doc: svg(
+  terminal: art(
     <>
-      <path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
-      <path d="M14 3v4h4" />
+      <rect x="14" y="18" width="72" height="64" rx="7" fill="#1c1c1e" stroke="rgba(255,255,255,.18)" strokeWidth="1.5" />
+      <circle cx="23" cy="26" r="2.2" fill="#ff5f57" />
+      <circle cx="30" cy="26" r="2.2" fill="#febc2e" />
+      <circle cx="37" cy="26" r="2.2" fill="#28c840" />
+      <path d="M26 44l11 8-11 8" fill="none" stroke="#39d353" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M44 62h18" stroke="#e5e5e5" strokeWidth="4.5" strokeLinecap="round" />
     </>,
   ),
-  code: svg(<path d="M9 7l-5 5 5 5M15 7l5 5-5 5" />),
-  monogram: <span className="icon-mark">KA</span>,
+  mail: art(
+    <>
+      <rect x="17" y="28" width="66" height="46" rx="6" fill="#fff" />
+      <path d="M19 31l31 23 31-23" fill="none" stroke="#2b7bff" strokeWidth="3.5" strokeLinejoin="round" />
+    </>,
+  ),
+  gear: art(
+    <>
+      <circle cx="50" cy="50" r="27" fill="none" stroke="#e5e5ea" strokeWidth="11" strokeDasharray="7.4 6.7" />
+      <circle cx="50" cy="50" r="22" fill="#d1d1d6" />
+      <circle cx="50" cy="50" r="13" fill="#3a3a3c" />
+      <circle cx="50" cy="50" r="6" fill="#8e8e93" />
+    </>,
+  ),
+  code: art(<path d="M40 34L24 50l16 16M60 34l16 16-16 16" fill="none" stroke="#fff" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />),
+  monogram: (
+    <>
+      {art(<circle cx="50" cy="50" r="33" fill="none" stroke="rgba(255,255,255,.22)" strokeWidth="2" />)}
+      <span className="icon-mark relative">KA</span>
+    </>
+  ),
   in: <span className="icon-mark lowercase">in</span>,
 };

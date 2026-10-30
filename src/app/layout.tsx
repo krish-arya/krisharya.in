@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, Inter, Source_Serif_4 } from "next/font/google";
 import { person } from "@/content/data";
+import { PREPAINT } from "@/lib/prepaint";
 import "./globals.css";
 
 // SF Pro on Apple devices; Inter stands in everywhere else.
@@ -96,6 +97,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${inter.variable} ${plexMono.variable} ${sourceSerif.variable}`}
     >
       <head>
+        <script dangerouslySetInnerHTML={{ __html: PREPAINT }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       </head>
       <body>

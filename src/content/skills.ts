@@ -3,6 +3,8 @@ import { topology, type ProjectId } from "./data";
 /** Every leaf of the skill topology, shipped as its own app. */
 export interface Skill {
   slug: string;
+  /** Position in the table, like an atomic number. */
+  n: number;
   name: string;
   /** Two-letter mark drawn on the app icon, like an element symbol. */
   abbr: string;
@@ -61,9 +63,9 @@ const slugify = (s: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 
-export const skills: Skill[] = topology.flatMap((g) =>
-  g.leaves.map((l) => ({ slug: slugify(l.name), name: l.name, abbr: ABBR[l.name] ?? l.name.slice(0, 2), group: g.group, used: l.used })),
-);
+export const skills: Skill[] = topology
+  .flatMap((g) => g.leaves.map((l) => ({ slug: slugify(l.name), name: l.name, abbr: ABBR[l.name] ?? l.name.slice(0, 2), group: g.group, used: l.used })))
+  .map((s, i) => ({ ...s, n: i + 1 }));
 
 export const skillBySlug = Object.fromEntries(skills.map((s) => [s.slug, s])) as Record<string, Skill>;
 
