@@ -1,12 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Archivo, IBM_Plex_Mono, Instrument_Serif } from "next/font/google";
+import { IBM_Plex_Mono, Inter, Source_Serif_4 } from "next/font/google";
 import { person } from "@/content/data";
 import "./globals.css";
 
-const archivo = Archivo({
-  variable: "--font-archivo",
+// SF Pro on Apple devices; Inter stands in everywhere else.
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-  axes: ["wdth"],
   display: "swap",
 });
 
@@ -17,11 +17,9 @@ const plexMono = IBM_Plex_Mono({
   display: "swap",
 });
 
-const instrument = Instrument_Serif({
-  variable: "--font-instrument",
+const sourceSerif = Source_Serif_4({
+  variable: "--font-source-serif",
   subsets: ["latin"],
-  weight: "400",
-  style: "italic",
   display: "swap",
 });
 
@@ -38,7 +36,7 @@ export const metadata: Metadata = {
     template: "%s — Krish Arya",
   },
   description,
-  applicationName: "Krish Arya — System",
+  applicationName: "Krish Arya",
   authors: [{ name: person.name, url: person.links[0].href }],
   keywords: [
     "Krish Arya",
@@ -55,7 +53,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     type: "profile",
-    title: "Krish Arya — System",
+    title: "Krish Arya",
     description,
     siteName: "Krish Arya",
     locale: "en_IN",
@@ -63,15 +61,18 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Krish Arya — System",
+    title: "Krish Arya",
     description,
   },
   alternates: { canonical: "/" },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0c0c0b",
-  colorScheme: "dark",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#eceef5" },
+    { media: "(prefers-color-scheme: dark)", color: "#0e1018" },
+  ],
+  colorScheme: "light dark",
 };
 
 const jsonLd = {
@@ -87,27 +88,17 @@ const jsonLd = {
   knowsAbout: ["Large language models", "Retrieval-augmented generation", "AI agents", "Voice AI", "Text-to-SQL", "AI evaluation"],
 };
 
-// Runs before paint: returning visitors and reduced-motion users skip the boot overlay.
-const bootGate = `try{var d=document.documentElement;if(matchMedia('(prefers-reduced-motion: reduce)').matches||localStorage.getItem('ka.booted'))d.dataset.boot='skip'}catch(e){}`;
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${archivo.variable} ${plexMono.variable} ${instrument.variable}`}
+      className={`${inter.variable} ${plexMono.variable} ${sourceSerif.variable}`}
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: bootGate }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       </head>
-      <body>
-        <a href="#main" className="skip-link">
-          Skip to content
-        </a>
-        {children}
-        <div className="grain" aria-hidden />
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
